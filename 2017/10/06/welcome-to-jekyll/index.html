@@ -117,7 +117,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/10/06/welcome-to-jekyll/" data-id="ck4ozwl5l0005s77ncqjmed2l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/10/06/welcome-to-jekyll/" data-id="ck9qr3vww00062r7nje296yfw" class="article-share-link">Share</a>
       
       
     </footer>
@@ -141,6 +141,32 @@
   
 </article>
 
+<!--  -->
+
+
+    <section id="comments" class="comments">
+      <style>
+        .comments{margin:30px;padding:10px;background:#fff}
+        @media screen and (max-width:800px){.comments{margin:auto;padding:10px;background:#fff}}
+      </style>
+      <div id="vcomment" class="comment"></div> 
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+<script>
+   var notify = 'false' == true ? true : false;
+   var verify = 'false' == true ? true : false;
+    window.onload = function() {
+        new Valine({
+            el: '#vcomment',
+            notify: notify,
+            verify: verify,
+            app_id: "v8C6wPlrxfilG0BK9giRge5w-MdYXbMMI",
+            app_key: "ewKhKkkhE3agkHXc1ELYg1hS",
+            placeholder: "write your idea",
+            avatar:"retro"
+        });
+    }
+</script>
+  </section>
 </section>
         
           <aside id="sidebar">
@@ -218,7 +244,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2019 Chaging<br>
+      &copy; 2020 Chaging<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
