@@ -80,6 +80,185 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-remount-disk-partition-to-file-dir" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/11/22/remount-disk-partition-to-file-dir/" class="article-date">
+  <time datetime="2020-11-22T15:22:58.000Z" itemprop="datePublished">2020-11-22 23:22:58</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Tools/">Tools</a>►<a class="article-category-link" href="/categories/Tools/Computer-System/">Computer System</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/11/22/remount-disk-partition-to-file-dir/">Linux系统把相关文件目录重新挂载到新硬盘分区</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Linux系统把相关文件目录重新挂载到新硬盘分区"><a href="#Linux系统把相关文件目录重新挂载到新硬盘分区" class="headerlink" title="Linux系统把相关文件目录重新挂载到新硬盘分区"></a>Linux系统把相关文件目录重新挂载到新硬盘分区</h2><p><strong>背景</strong></p>
+<p> 更换了新的480G的SSD硬盘，需要把LinuxMint原来挂载在/home、/opt文件目录的机械硬盘分区内容复制到新SSD硬盘新划分出的分区上，然后将新SSD分区挂载到/home、/opt目录</p>
+<p><strong>操作步骤</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">1. 给480G SSD硬盘增加两个分区并初始化，用于复制原/home、/opt目录中的内容；</span><br><span class="line"></span><br><span class="line">2. 创建两个新目录，用于`临时挂载`新SSD分区，同步数据；</span><br><span class="line">	sudo mkdir /media/pi/home</span><br><span class="line">	sudo mkdir /media/pi/opt</span><br><span class="line">	</span><br><span class="line">3. 挂载新SSD分区到临时目录</span><br><span class="line">	sudo mount /dev/sdb11 /media/pi/home</span><br><span class="line">	sudo mount /dev/sdb10 /media/pi/opt</span><br><span class="line">	</span><br><span class="line">4. 同步/home到/media/pi/home,同步/opt到/media/pi/opt</span><br><span class="line">	sudo rsync -aXS /home/. /media/pi/home/.</span><br><span class="line">	sudo rsync -aXS /opt/. /media/pi/opt/.</span><br><span class="line">	tips: rsync详解可以  man rsync 或者  rsync --help</span><br><span class="line"></span><br><span class="line">5. 为相关目录重新挂载硬盘分区</span><br><span class="line">	sudo mount /dev/sdb11 /home</span><br><span class="line">	sudo mount /dev/sdb10 /opt</span><br><span class="line">	</span><br><span class="line">6. 修改系统启动，自动挂载分区参数设置</span><br><span class="line">	sudo vi /etc/fstab</span><br><span class="line">	修改  /home /opt 的目录对应的分区设置，更新相关的UUID</span><br><span class="line">	</span><br><span class="line">	6.1 如果查看硬盘分区的UUID</span><br><span class="line"><span class="meta">		1&gt;</span><span class="bash"> sudo blkid</span></span><br><span class="line">        2&gt; sudo ls -l /dev/disk/by-uuid</span><br><span class="line">        </span><br><span class="line">7. 重启系统，查看分区挂载情况</span><br><span class="line">	df -h</span><br><span class="line"></span><br><span class="line">8. 确认数据复制成功，一切正常后，清除相关数据</span><br><span class="line">   8.1 清除临时挂载目录，重新挂载操作（步骤5）后，目录为空</span><br><span class="line">	sudo rm -r /media/pi/home </span><br><span class="line">	sudo rm -r /media/pi/opt	</span><br><span class="line">	</span><br><span class="line">   8.2 清除原机械硬盘中，挂载到/home  /opt目录的分区中的数据</span><br></pre></td></tr></table></figure>
+<p>Reference:</p>
+<ol>
+<li><a href="https://www.cnblogs.com/marklove/p/9692362.html" target="_blank" rel="noopener">Linux查看分区UUID的两种方法</a>             </li>
+<li><a href="https://www.cnblogs.com/saszhuqing/p/8716644.html" target="_blank" rel="noopener">Linux系统把/home重新挂载到其他硬盘或分区</a></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cspyc.gitee.io/2020/11/22/remount-disk-partition-to-file-dir/" data-id="cki4q9gpf000bwh7n91gubosg" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/System/">System</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+<!--  -->
+
+
+  
+    <article id="post-replace-computer-ssd" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/11/22/replace-computer-ssd/" class="article-date">
+  <time datetime="2020-11-22T15:18:04.000Z" itemprop="datePublished">2020-11-22 23:18:04</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Tools/">Tools</a>►<a class="article-category-link" href="/categories/Tools/Computer-System/">Computer System</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/11/22/replace-computer-ssd/">Linux系统下复制硬盘内容，替换系统盘</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Linux系统下复制硬盘内容，替换系统盘"><a href="#Linux系统下复制硬盘内容，替换系统盘" class="headerlink" title="Linux系统下复制硬盘内容，替换系统盘"></a>Linux系统下复制硬盘内容，替换系统盘</h2><p><strong>背景</strong></p>
+<p>笔记本电脑，原有128GSSD硬盘作为系统盘，系统盘最开始出厂自带Windows Home操作系统，19年12月自行安装了LinuxMint，因此系统盘自带双系统。</p>
+<p><strong>目标</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">新购买西数480G，M.2 SSD，由于笔记本电脑只有一个M.2 接口，需要把系统盘内容完整镜像到新SSD上面。</span><br></pre></td></tr></table></figure>
+<p><strong>操作步骤</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1.启动系统盘LinuxMint系统，把480G新SSD硬盘安装到SSK硬盘盒中，通过USB接口与电脑连接&lt;新硬盘并没有格式化&gt;;</span><br><span class="line">2.fdisk -l 查看各硬盘；</span><br><span class="line">3.重点命令： </span><br><span class="line">   	dd  if=/dev/sda of=/dev/sdc bs=4M  &lt;dd if=源数据硬盘 of=目标硬盘&gt;</span><br><span class="line">   等待数据拷贝完即可</span><br><span class="line">   4.将新SSD直接替换原系统盘，安装到笔记本中；</span><br><span class="line">   5.启动电脑测试</span><br></pre></td></tr></table></figure>
+<p><strong>结果</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.原系统盘的内容被完整地拷贝到新硬盘中；</span><br><span class="line">2.替换硬盘后，可以直接启动LinuxMint以及Windows 10 Home，而且Windows 10依然是激活状态；</span><br><span class="line">3.原系统盘未做到4k对齐，镜像到新硬盘后依然没有4k对齐。</span><br></pre></td></tr></table></figure>
+<p><strong>使用感触</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1.把在使用中的系统盘的数据，直接镜像到新硬盘，不用使用像PE这样的中间系统工具，非常方便；</span><br><span class="line">2.镜像后，直接替换SSD即可，基本不需要其他操作，这命令简直太强大了！</span><br></pre></td></tr></table></figure>
+<p><strong>使用dd命令后，遇到的问题</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">从128G SSD 克隆到 480G SSD后，使用 sudo fdisk -l</span><br><span class="line"></span><br><span class="line">提示:GPT PMBR size mismatch (250069679 != 937703087) will be corrected by w(rite).</span><br><span class="line">而且使用分区工具，发现多余的空间也无法使用，提示可用空间也只有128G</span><br><span class="line"></span><br><span class="line">原因：当使用 `dd`时，会克隆一样的东西到新硬盘，包换硬盘信息，会误导系统，以为新硬盘也只有原硬盘那么大。</span><br><span class="line"></span><br><span class="line">解决办法： sudo gdisk -l /dev/sdb</span><br><span class="line">会提示  是否需要修复  输入  Fix即可</span><br><span class="line"></span><br><span class="line">p.s. fdisk只能查看GPT分区硬盘的信息，无法操作GPT分区</span><br><span class="line">操作GPT分区硬盘，相关指令  </span><br><span class="line"></span><br><span class="line">sudo parted -l</span><br><span class="line">or</span><br><span class="line">sudo parted /dev/sda unit s print</span><br><span class="line">or</span><br><span class="line">sudo gdisk -l /dev/sda</span><br></pre></td></tr></table></figure>
+<p>Reference:</p>
+<p>1.<a href="https://ubuntuforums.org/showthread.php?t=2277232" target="_blank" rel="noopener">https://ubuntuforums.org/showthread.php?t=2277232</a></p>
+<p>2.<a href="https://askubuntu.com/questions/594767/gpt-pmbr-size-mismatch-after-dd-clone" target="_blank" rel="noopener">https://askubuntu.com/questions/594767/gpt-pmbr-size-mismatch-after-dd-clone</a></p>
+<p>3.<a href="https://askubuntu.com/questions/1097226/gpt-pmbr-size-mismatch-after-dd-clone-why-it-only-happens-sometimes" target="_blank" rel="noopener">https://askubuntu.com/questions/1097226/gpt-pmbr-size-mismatch-after-dd-clone-why-it-only-happens-sometimes</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cspyc.gitee.io/2020/11/22/replace-computer-ssd/" data-id="cki4q9gpj000gwh7nrohtu649" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/System/">System</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+<!--  -->
+
+
+  
+    <article id="post-《敏捷中国史话》读后感" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/07/21/《敏捷中国史话》读后感/" class="article-date">
+  <time datetime="2020-07-21T15:26:37.000Z" itemprop="datePublished">2020-07-21 23:26:37</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/读书笔记/">读书笔记</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/21/《敏捷中国史话》读后感/">《敏捷中国史话》读后感</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="《敏捷中国史话》读后感"><a href="#《敏捷中国史话》读后感" class="headerlink" title="《敏捷中国史话》读后感"></a>《敏捷中国史话》读后感</h2><p>  比较快地读完了这本书，而且是精读，虽然无法记住所有细节，但是也了解了中国软件开发行业的发展历程。</p>
+<p>​    书名虽然是《敏捷中国史话》，但说是中国软件开发行业发展史也不为过，只是着重点放在敏捷上。</p>
+<p>​    全书从2000年前后开始，国家发布“囯发十八号文”作为一个起点，开始论述。</p>
+<p>​    在上世纪九十年代，中国互联网开始发展，出现一批门户网站、B2B的电子商务网站。但出现爆发式的增长，还是国家发布相关政策，全面推进电子政务，政府内部信息化，这给软件行业的发展提供了强劲的推动力。</p>
+<p>​    也是从这个阶段开始，“手工作坊式”的软件开发效率，无法满足市场对软件的需求，这是中国的“软件危机”，</p>
+<p>​    在寻求解决方案的过程中，有人看向了邻居印度，发现他们软件业发展得的很不错，有许多离岸外包的活。另外有人提出，软件开发向构件化开发发展，由高级人才设计、开发构件，“软件蓝领”只需要负责组装便可。用建筑行业来类别软件开发行业，希望能通过这样，降低对人才的要求，快速规模化生产出软件。于是，就有培训机构跟印度一些公司合作，培训基础人才。</p>
+<p> 同时，引入从美国海军项目中产生的CMM能力成熟度模型，用来指导大规模软件开发。而且从国家层面出资补贴通过CMM认证的公司，这就导致很多公司为了拿补贴而去进行认证，并没有落到实处。而且CMM还有一个很大的问题，虽然提出了1-5级的评估标准，但是并没有给出达到这个标准的具体实践指导。评估的依据只是，软件开发的每个阶段得到的文档。这其中就有一个很大的问题，可能文档有了，但是实践情况并不是这样落实的。按作者的说法，推行CMM并没有提高国内软件开发效率。就我四年来的从业经验，从小公司，到规模不那么小的上市公司，甚至号称实践敏捷的项目组，实际操作过程感觉都是小作坊式的工作流程，压根谈不上应用了什么行业最佳实践！</p>
+<p>​    千喜年后，也有一批行业内的大佬，把目光投向了，国外的极限编程、敏捷开发实践。敏捷开发正式提出的标志应当是在上世纪九十年代一群软件先行者举行的雪鸟会议上发布《敏捷宣言》；</p>
+<pre><code>      人和交互  高于 流程和工具；
+  可工作的软件   高于 面面俱到的文档；
+  与客户协商合作 高于 合同谈判；
+          响应变化  高于 遵循计划。                        
+`尽管右项有其价值，我们更重视左项的价值`    
+</code></pre><p>慢慢有人把一批关于极限编程、敏捷开发的书籍翻译到国内，并且在一些项目中开始实践。书中一个比较深刻的案例：两个不同的项目组同时为一政府单位做两个不同的项目，其中一个项目组尝试实践敏捷开发方法，每隔一段时间，能把相应阶段的产品展示给用户，并与客户沟通，调整需求，尽管过程中有一些实践没有做到位，如持续集成、单元测试，会出现一些小bug，但也并没有影响进度；但是，另外一个项目组，只是在时间过去一大半的时候，给出一个80%的项目进度，那到底是什么样子呢？让客户心中并没有底。</p>
+<p>​    在这个时期，敏捷虽然有萌芽，但并没有被大规模使用。作者总结道：大部分都是政府推进的相关项目，其特点就是每年年初做计划、预算，一旦设计好后。直接使用者也并没有改变开发的话语权，这样就决定，响应变化而生的敏捷，并没有让人采用的动力。</p>
+<p>​    敏捷在中国的影响力扩大，应当是始于通信行业巨头的敏捷转型。由于通信市场的发展，三网融合，出现更多的竞争者，同时客户的需求开始向提高直接用户体验转变，不再是由以前通信厂家说了算，直接堆参数就行。需求的多变，就要求通信厂商能够快速响应。从诺基亚开始，由单一项目到全公司大型项目逐渐推广敏捷开发方法，提升开发效率。同时，华为在引入ThoughtWork的咨询服务的帮助下，开始自上而下的敏捷转型运动，提出三个层次分三步走：项目级、产品级、版本级。在此之前，ThoughtWork也已经开始进入中国布道，按作者的说法，通过与华为的合作，也培养了ThoughtWork咨询师们带领大型团队进行敏捷开发的经验。而且，敏捷最初的定义只是说解决小团队的小问题，在华为这种大团队的敏捷转型中，也证实了敏捷的可行性，而且也积累了不少新的经验。</p>
+<p>​    再接着就是国内互联网企业的敏捷转型，腾讯、阿里、百度都极具代表性。互联网企业的敏捷转型基本是自下而上的，最大的特点是，从点出发，把积累下来的最佳实践、工作流程，通过工具、平台固定下来，不仅供公司内部使用，同时向外开放，像腾讯的TADP。互联网公司的转型让大部分企业都争相效仿，但是出现了只模仿了个形，都说自己是敏捷。同时，以前搞CMM的那部分专家，提出：敏捷是CMM的具体实践，与CMM是兼容的。事实就是，很多企业都说自己是敏捷，实际连基本的敏捷实践都没有做到，还是“小作坊“式的工作流程。</p>
+<p>​    同时重点一个章节介绍了Scrum，对于Scrum的实践，可以说是敏捷的一部分，更多地只是覆盖到了需求管理和项目管理部分，并没有提到配置管理和质量保证的相关实践。而且国内在优普丰的推广下，刮起了CSM认证的热潮。按作者的说法，CSM的认证，上两天课加上基本100%拿证，这种<code>面向知识</code>的认证并没有多大作用， 因为知道和做到，这中间还是有不小的差距的。<code>面向技能</code>的认证才有一定的价值。</p>
+<p>​    后面，还讲了敏捷的横向发展。因为敏捷最初只是一群重视的技术的大佬，对于软件开发这个环节提出的快速响应变化的实践。如果一家公司，在业务环节以及发布环境敏捷不起来，那也是白搭。向前，在业务方面，发展起了  在源自丰田生产过程中发展起来的<code>精益</code>框架下的<code>设计思维</code>，发掘、整理业务需求，快速构建、验证、学习，并且不断循环，最终达到满足市场、满足用户的需求。这其中也涉及到组织架构及企业政策的改变；向后，发展出<code>持续交付</code>理论 ，打破开发与运维的界限。并发展出DevOps相关理论与平台。这里提到了招商银行，企业内部创立创新孵化基金的实践，并取得良好效果的案例。</p>
+<p>​    最后，提到了当前软件开发从业人员的工作环境，从办公室的小环境，到996加班，再到19年996.ICU事件。作者也分析了软件从业人员工作时间越来越长，压力越来越大的原因……</p>
+<p>​    总而言之，不仅能从这本书中了解到中国软件行业的发展历程，也能了解软件工程的一些基本知识，例如软件开发过程的四大能力：需求管理、项目管理、配置管理、质量保障，以及对应有哪些实践。对于我个人而言，当前阶段需要重点提高的能力包括：TDD，熟练写测试；重构，提高代码质量；持续集成。这些实践主要是关于配置管理和质量保障相关能力，也是极限编程，敏捷开发的核心技术实践！</p>
+<p>书籍链接：<a href="https://book.douban.com/subject/35066500/" target="_blank" rel="noopener">《敏捷中国史话》</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cspyc.gitee.io/2020/07/21/《敏捷中国史话》读后感/" data-id="cki4q9gpm000mwh7nhmuehs5x" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reading/">Reading</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+<!--  -->
+
+
+  
     <article id="post-LinuxMint" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/12/02/LinuxMint/" class="article-date">
@@ -146,10 +325,64 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cspyc.gitee.io/2019/12/02/LinuxMint/" data-id="ckhw1wc0j000mkx7nukv8fcfc" class="article-share-link">Share</a>
+      <a data-url="https://cspyc.gitee.io/2019/12/02/LinuxMint/" data-id="cki4q9gpl000kwh7n1c5mxvr4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/System/">System</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+<!--  -->
+
+
+  
+    <article id="post-《邻人之妻》读后感" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/30/《邻人之妻》读后感/" class="article-date">
+  <time datetime="2019-11-30T15:35:53.000Z" itemprop="datePublished">2019-11-30 23:35:53</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/读书笔记/">读书笔记</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/30/《邻人之妻》读后感/">《邻人之妻》读后感</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="《邻人之妻》读后感"><a href="#《邻人之妻》读后感" class="headerlink" title="《邻人之妻》读后感"></a>《邻人之妻》读后感</h3><p>   《邻人之妻》这本书是微信读书免费送书推送的，第一次看到书籍的标题，以为是写性、婚姻、出轨相关话题的。抱着这样的预期开始阅读，连续几个月作为我的如厕读<br> 物，一点点读完了。</p>
+<p>其实从读完前面几个小的章节，就发现这本书并不是那么简单，虽然每个小章节都是围绕一个主要人物展开的，但是每个章节的描述非常细致、严谨，仿佛是参照严肃且翔实的历史资料编写的。</p>
+<p>  整本书主要描述了美国从20世纪50年代到20世纪70年代的性解决运动。在读这本书以前，在我的印象中，美国的性解放运动就是这么自然地发生的，也只是在性方面<br>从观念到行为更加开放而已。但是通过这本书，我认识到美国的性解放运动也并不是来得这样简单和自然，性解放也并非只是解放性。</p>
+<p>  从书中一系列的故事中可以看出，美国在20世纪50年代，并未彻底政教分离，传统的宗教观念以及信奉这些观念的人，对于政府的决策、立法以及法院的判决都有很大的<br>影响。原来，美国很多州对淫秽出版物的界定和判罚都很严格，而且有专门的宗教警察到处嗅探着这些违法行为。但是，总有一群或是为钱或是说为自由敢于冒险、不信邪，引进被判定为淫秽物的书籍，在地下流通。也正是这些书商，在被宗教警察抓获、起诉，打官司的过程中，一步步让司法解释更宽松，或者说是形势的变化，让一部分自由派的官员或者法官顺势而为。在这个过程中，也有一部分书商是付出了反复入狱、罚款的代价的。在描述出版相关的案例中，让我印象最深刻的是写海夫纳创立《花花公子》，包括书籍最后面详细描述了海夫纳的个人生活。</p>
+<p>  另外，一方面也主要描述了一部分人对建立自由平等，完全性开放的小型社区的探索。在社区中，没有婚姻的概念，任何男女可以自由发生性关系。以砂岩作为代表，其<br>创立者从自己容纳夫妻双方在婚姻的缔约之中出轨，到后来换妻，吸引组建一个小团体，最后再创建砂岩，参加人士不乏社会名流。对于换妻、自由的性关系的信奉者的心<br>理描述极为详细，这也让我看到，其实这些人不仅仅只是为了满足自己的性欲与猎奇心理，同时也是在探索两性关系中自由的边界以及探索婚姻中夫妻双方在不破坏婚姻的<br>前提下，对一些行为保持怎样的心态能最大程度上满足自己的欲望。对于奥奈达的描写，让我想到的是乌托邦，这个社区不仅仅只是性爱自由，还有经济共同体。不过最后<br>还是以失败告终，要求成员都没私心，然而管理者拥有所有的资源分配权，可谓是顺我者昌逆我者亡。</p>
+<p>  除此之外，书中还详细写了在美国如雨后春笋般出现的按摩院，详细记录了其中的按摩女郎、经理、顾客等不同角色，不同人物。其详细程度，让我不断惊讶，作者是怎<br>样知道这些的！杜撰？不可能有这样详细！详细访谈？有这种可能，但是似乎也不会那样有画面感。读到书的最后，才知道作者都是实地考察过的。作者不仅是一个观察<br>者，同时也是一个参与者！</p>
+<p>  作者是作为一个观察者，以一种极为客观的口吻讲述着别人的故事，到书中的最后部分，甚至还以三人称在讲述他自己的经历，应当说作者是在力求客观表达自己的所见<br>所闻以及所经历的一切。直到最后的部分，才明确表达自己的观点与立场。作者以一种巧妙的手法，将一连串相关的人物，按章节详细描写，组织得井井有条。而且这些内<br>容中涉及了很多专业内容。其中包换政治、社会学、心理、法律、历史、宗教等专业知识内容的描述。其中令人最为印象深刻的是，为一个书商打官司的法庭辩论。记录非<br>常详细，对于人物的状态也描写得很生动。</p>
+<p>  美国的这次解放运动，对于美国来说应当是意义深远的！不仅仅只是在性方面，让人全方位的更自由，在生产生活中，更少受到宗教的约束，在政治中更是如此！</p>
+<p>  通过这一系列的运动，在美国，可以合法出版情色杂志、一些州也可以合法性交易，但是这种自由是不是就是不受约束的呢？最近观看了，Netfix制作的纪录片《诚邀辣妹》，记录了为了赚更多的钱从事色情行业的人们。有把这些当作事业的投资者，有怀揣着致富梦的从相对贫穷环境来的女孩……其中一集，讲述各种色情直播、信息在网络上快速流通，青少年们可以自由地去观看。有一个女孩，在她朋友被强奸救助时，她所做的是为了别人的点赞和鼓励，对这场强奸进行直播。最后不得不面临起诉！这就让</p>
+<p>  我在想，自由是可以完全不加限制的吗？至少从一些事例来看，并不是的。人都有一定的局限性，像上面案例中，少年儿童尤为如此，缺乏分辨力。适当的信息管制是有必要的。只能循序渐进地培养出了，独立思考和是非分明的能力之后，才能更加自由。自由是建立在遵守约束的基础上的！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://cspyc.gitee.io/2019/11/30/《邻人之妻》读后感/" data-id="cki4q9gpi000ewh7nrw1s9qii" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reading/">Reading</a></li></ul>
 
     </footer>
   </div>
@@ -198,7 +431,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cspyc.gitee.io/2019/04/02/PureO/" data-id="ckhw1wc050005kx7n9pzdvlub" class="article-share-link">Share</a>
+      <a data-url="https://cspyc.gitee.io/2019/04/02/PureO/" data-id="cki4q9gpc0006wh7n52yxhi4z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OCD/">OCD</a></li></ul>
@@ -247,7 +480,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cspyc.gitee.io/2019/04/02/hello-world/" data-id="ckhw1wc0i000lkx7n7q40lepg" class="article-share-link">Share</a>
+      <a data-url="https://cspyc.gitee.io/2019/04/02/hello-world/" data-id="cki4q9gpe000awh7nycxeib37" class="article-share-link">Share</a>
       
       
     </footer>
@@ -297,7 +530,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://cspyc.gitee.io/2017/10/06/welcome-to-jekyll/" data-id="ckhw1wc060006kx7nlk71ddj1" class="article-share-link">Share</a>
+      <a data-url="https://cspyc.gitee.io/2017/10/06/welcome-to-jekyll/" data-id="cki4q9gpb0005wh7ny42r6d12" class="article-share-link">Share</a>
       
       
     </footer>
@@ -319,7 +552,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Psychology/">Psychology</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Psychology/OCD/">OCD</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/Computer-System/">Computer System</a></li></ul></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Psychology/">Psychology</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Psychology/OCD/">OCD</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/Computer-System/">Computer System</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/读书笔记/">读书笔记</a></li></ul>
     </div>
   </div>
 
@@ -329,7 +562,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/OCD/">OCD</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/System/">System</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/OCD/">OCD</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Reading/">Reading</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/System/">System</a></li></ul>
     </div>
   </div>
 
@@ -339,7 +572,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/OCD/" style="font-size: 10px;">OCD</a> <a href="/tags/System/" style="font-size: 10px;">System</a>
+      <a href="/tags/OCD/" style="font-size: 10px;">OCD</a> <a href="/tags/Reading/" style="font-size: 15px;">Reading</a> <a href="/tags/System/" style="font-size: 20px;">System</a>
     </div>
   </div>
 
@@ -348,7 +581,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">November 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">July 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li></ul>
     </div>
   </div>
 
@@ -361,19 +594,23 @@
       <ul>
         
           <li>
+            <a href="/2020/11/22/remount-disk-partition-to-file-dir/">Linux系统把相关文件目录重新挂载到新硬盘分区</a>
+          </li>
+        
+          <li>
+            <a href="/2020/11/22/replace-computer-ssd/">Linux系统下复制硬盘内容，替换系统盘</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/21/《敏捷中国史话》读后感/">《敏捷中国史话》读后感</a>
+          </li>
+        
+          <li>
             <a href="/2019/12/02/LinuxMint/">双系统之Windows10 + LinuxMint</a>
           </li>
         
           <li>
-            <a href="/2019/04/02/PureO/">PureO</a>
-          </li>
-        
-          <li>
-            <a href="/2019/04/02/hello-world/">Hello World</a>
-          </li>
-        
-          <li>
-            <a href="/2017/10/06/welcome-to-jekyll/">Welcome to Jekyll!</a>
+            <a href="/2019/11/30/《邻人之妻》读后感/">《邻人之妻》读后感</a>
           </li>
         
       </ul>
